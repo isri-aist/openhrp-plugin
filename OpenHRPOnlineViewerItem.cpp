@@ -38,6 +38,24 @@ using namespace cnoid;
 using namespace OpenHRP;
 using fmt::format;
 
+namespace details {
+
+#ifdef HAS_OLD_COLLISION_LINK_PAIR
+using CollisionLinkPairPtr = cnoid::CollisionLinkPairPtr;
+std::vector<cnoid::Collision>& get_collisions(CollisionLinkPairPtr ptr)
+{
+    return ptr->collisions;
+}
+#else
+using CollisionLinkPairPtr = std::shared_ptr<cnoid::CollisionLinkPair>;
+std::vector<cnoid::Collision>& get_collisions(CollisionLinkPairPtr ptr)
+{
+    return ptr->collisions();
+}
+#endif
+
+}  // namespace details
+
 namespace cnoid {
 
 #ifdef OPENHRP_3_0
@@ -433,14 +451,14 @@ void OpenHRPOnlineViewerItemImpl::updateCollision(const WorldState& state, Colli
     int n = state.collisions.length();
     for(int i=0; i < n; i++){
         const OpenHRP::Collision& source = state.collisions[i];
-        CollisionLinkPairPtr dest = std::make_shared<CollisionLinkPair>();
+        details::CollisionLinkPairPtr dest = std::make_shared<CollisionLinkPair>();
         int numPoints = source.points.length();
         for(int j=0; j < numPoints; j++){
            // std::cout << source.points[j].position[0] << " " << source.points[j].position[1] << " " << source.points[j].position[2] << std::endl;
            // std::cout << source.points[j].normal[0] << " " << source.points[j].normal[1] << " " << source.points[j].normal[2] << std::endl;
             const CollisionPoint& point = source.points[j];
-            dest->collisions.push_back(Collision());
-            Collision& col = dest->collisions.back();
+            details::get_collisions(dest).push_back(Collision());
+            Collision& col = details::get_collisions(dest).back();
             col.point = Vector3(point.position[0], point.position[1], point.position[2]);
             col.normal = Vector3(point.normal[0], point.normal[1], point.normal[2]);
             col.depth = point.idepth;
@@ -450,8 +468,12 @@ void OpenHRPOnlineViewerItemImpl::updateCollision(const WorldState& state, Colli
             BodyItemInfo* info = findInfo(i? source.pair.charName2.in() : source.pair.charName1.in());
             if(info){
                 const BodyPtr& body = info->bodyItem->body();
+#ifdef HAS_OLD_COLLISION_LINK_PAIR
                 dest->body[j] = body;
                 dest->link[j] = body->link(i? source.pair.linkName2.in() : source.pair.linkName1.in());
+#else
+                dest->setLink(j, body->link(i? source.pair.linkName2.in() : source.pair.linkName1.in()));
+#endif
             }
         }
         collisions->push_back(dest);

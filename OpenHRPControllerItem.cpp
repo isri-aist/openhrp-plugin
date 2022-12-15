@@ -108,9 +108,9 @@ bool OpenHRPControllerItem::initialize(ControllerIO* io)
                 command += ".exe";
             }
             // quote the command string to support a path including spaces
-            controllerServerProcess.start(QString("\"") + command.c_str() + "\"");
+            controllerServerProcess.start(QString("\"") + command.c_str() + "\"", QStringList{});
 #else
-            controllerServerProcess.start(command.c_str());
+            controllerServerProcess.start(command.c_str(), QStringList{});
 #endif
 
             if(!controllerServerProcess.waitForStarted()){

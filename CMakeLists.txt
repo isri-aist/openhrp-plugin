@@ -22,6 +22,11 @@ if(BUILD_OPENHRP_PLUGIN)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
   endif()
 
+  try_compile(HAS_OLD_COLLISION_LINK_PAIR
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/detect-old-collision-link-pair.cpp
+    COMPILE_DEFINITIONS -I${PROJECT_SOURCE_DIR}/include -I${PROJECT_SOURCE_DIR} -I${EIGEN3_INCLUDE_DIRS}
+  )
+
   add_definitions(${OPENRTM_DEFINITIONS})
   include_directories(${CMAKE_CURRENT_BINARY_DIR} ${OPENRTM_INCLUDE_DIRS})
   link_directories(${OPENRTM_LIBRARY_DIRS})
@@ -64,6 +69,9 @@ if(BUILD_OPENHRP_PLUGIN)
 
     add_cnoid_library(${target} STATIC ${sources} ${idl_cpp_files} ${idl_h_files})
     set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS ${defver})
+    if(HAS_OLD_COLLISION_LINK_PAIR)
+      set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS -DHAS_OLD_COLLISION_LINK_PAIR)
+    endif()
     target_link_libraries(${target} CnoidCorba)
     apply_common_setting_for_library(${target} "${headers}")
 

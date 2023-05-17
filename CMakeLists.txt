@@ -4,6 +4,13 @@ option(BUILD_OPENHRP_PLUGIN "Building OpenHRPPlugin" OFF)
 option(BUILD_OPENHRP_PLUGIN_FOR_3_0 "Building OpenHRPPlugin for OpenHRP 3.0.x" OFF)
 option(BUILD_OPENHRP_MODEL_LOADER "Building OpenHRPModelLoader" OFF)
 
+option(CHOREONOID_PLUGIN_LINK_USE_KEYWORD "Choreonoid plugin should use the PUBLIC link keyword" ON)
+if(CHOREONOID_PLUGIN_LINK_USE_KEYWORD)
+  set(LINK_KEYWORD PUBLIC)
+else()
+  set(LINK_KEYWORD)
+endif()
+
 # set(CMAKE_BUILD_TYPE Debug)
 
 if(BUILD_OPENHRP_PLUGIN)
@@ -22,7 +29,7 @@ if(BUILD_OPENHRP_PLUGIN)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-Bsymbolic")
   endif()
 
-  try_compile(HAS_OLD_COLLISION_LINK_PAIR
+  try_compile(HAS_OLD_COLLISION_LINK_PAIR ${CMAKE_CURRENT_BINARY_DIR}/cmake/try-compile
     SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/detect-old-collision-link-pair.cpp
     COMPILE_DEFINITIONS -I${PROJECT_SOURCE_DIR}/include -I${PROJECT_SOURCE_DIR} -I${EIGEN3_INCLUDE_DIRS}
   )
@@ -72,7 +79,7 @@ if(BUILD_OPENHRP_PLUGIN)
     if(HAS_OLD_COLLISION_LINK_PAIR)
       set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS -DHAS_OLD_COLLISION_LINK_PAIR)
     endif()
-    target_link_libraries(${target} CnoidCorba)
+    target_link_libraries(${target} ${LINK_KEYWORD} CnoidCorba)
     apply_common_setting_for_library(${target} "${headers}")
 
     # Plugin
@@ -107,9 +114,9 @@ if(BUILD_OPENHRP_PLUGIN)
     set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS ${defver})
 
     if(version EQUAL 3.0)
-      target_link_libraries(${target} CnoidBodyPlugin CnoidOpenHRP${version})
+      target_link_libraries(${target} ${LINK_KEYWORD} CnoidBodyPlugin CnoidOpenHRP${version})
     else()
-      target_link_libraries(${target} CnoidOpenRTMPlugin CnoidBodyPlugin CnoidOpenHRP${version})
+      target_link_libraries(${target} ${LINK_KEYWORD} CnoidOpenRTMPlugin CnoidBodyPlugin CnoidOpenHRP${version})
     endif()
 
     apply_common_setting_for_plugin(${target} "${headers}")

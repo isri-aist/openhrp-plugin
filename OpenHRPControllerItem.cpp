@@ -10,16 +10,21 @@
 #include <cnoid/Archive>
 #include <cnoid/Sleep>
 #include <cnoid/PutPropertyFunction>
-#include <boost/filesystem.hpp>
 #include <fmt/format.h>
 #include <iostream>
 #include "gettext.h"
+
+#if __cplusplus >= 201703L
+#include <filesystem>
+#else
+#include <boost/filesystem.hpp>
+namespace filesystem = boost::filesystem;
+#endif
 
 using namespace std;
 using namespace std::placeholders;
 using namespace cnoid;
 using namespace OpenHRP;
-namespace filesystem = boost::filesystem;
 using fmt::format;
 
 OpenHRPControllerItem::OpenHRPControllerItem()
